@@ -8,7 +8,7 @@ import type { UndercoverVariantId } from './config';
 import { assignRoles, checkWinner } from './logic';
 import type { UndercoverStackParamList } from './UndercoverNavigator';
 
-type UndercoverNavigation = NativeStackNavigationProp<UndercoverStackParamList, keyof UndercoverStackParamList>;
+export type UndercoverNavigation = NativeStackNavigationProp<UndercoverStackParamList, keyof UndercoverStackParamList>;
 
 // Draws a fresh word pair, assigns roles, shuffles turn order, and pushes
 // the round into TurnEngine. Shared by Lobby's "Start Game" and GameOver's

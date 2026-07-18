@@ -1,11 +1,13 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
 import { spacing, typography, useTheme } from '../../../shared/theme';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
+import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type ClueTurnNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'ClueTurn'>;
 
@@ -14,6 +16,8 @@ const ON_PRIMARY_COLOR = '#FFFFFF';
 export function ClueTurn() {
   const navigation = useNavigation<ClueTurnNavigationProp>();
   const colors = useTheme();
+  const { t } = useTranslation();
+  useConfirmEndGame(navigation);
 
   const players = useRoomStore((s) => s.players);
   const phase = useTurnStore((s) => s.phase);
@@ -46,13 +50,17 @@ export function ClueTurn() {
   if (phase === 'discussion') {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <Text style={[typography.caption, { color: colors.textSecondary }]}>Round {roundNumber}</Text>
-        <Text style={[typography.title, styles.centerText, { color: colors.text }]}>Open discussion</Text>
+        <Text style={[typography.caption, { color: colors.textSecondary }]}>
+          {t('clueTurn.round', { number: roundNumber })}
+        </Text>
+        <Text style={[typography.title, styles.centerText, { color: colors.text }]}>
+          {t('clueTurn.openDiscussion')}
+        </Text>
         <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-          Talk it over — who sounded suspicious? Vote when you're ready.
+          {t('clueTurn.discussionPrompt')}
         </Text>
         <Pressable onPress={handleStartVote} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-          <Text style={[typography.subtitle, styles.onPrimaryText]}>Start Vote</Text>
+          <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('clueTurn.startVote')}</Text>
         </Pressable>
       </View>
     );
@@ -63,12 +71,14 @@ export function ClueTurn() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Text style={[typography.caption, { color: colors.textSecondary }]}>Round {roundNumber}</Text>
+      <Text style={[typography.caption, { color: colors.textSecondary }]}>
+        {t('clueTurn.round', { number: roundNumber })}
+      </Text>
       <Text style={[typography.title, styles.centerText, { color: colors.text }]}>
-        {currentPlayer?.name ?? 'Unknown player'}'s turn
+        {t('clueTurn.turnOf', { name: currentPlayer?.name ?? t('clueTurn.unknownPlayer') })}
       </Text>
       <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-        Say one word describing your secret word out loud — no repeats.
+        {t('clueTurn.cluePrompt')}
       </Text>
 
       <View style={styles.orderList}>
@@ -83,14 +93,16 @@ export function ClueTurn() {
             <View key={playerId} style={[styles.orderRow, { borderColor: colors.border, backgroundColor: rowBackground }]}>
               <View style={[styles.colorSwatch, { backgroundColor: player.color }]} />
               <Text style={[typography.body, styles.playerName, { color: nameColor }]}>{player.name}</Text>
-              {isDone && <Text style={[typography.caption, { color: colors.textSecondary }]}>Done</Text>}
+              {isDone && <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('clueTurn.done')}</Text>}
             </View>
           );
         })}
       </View>
 
       <Pressable onPress={handleNextTurn} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-        <Text style={[typography.subtitle, styles.onPrimaryText]}>{isLastTurn ? 'Start Discussion' : 'Next Player'}</Text>
+        <Text style={[typography.subtitle, styles.onPrimaryText]}>
+          {isLastTurn ? t('clueTurn.startDiscussion') : t('clueTurn.nextPlayer')}
+        </Text>
       </Pressable>
     </ScrollView>
   );

@@ -1,0 +1,93 @@
+{
+  "common": {
+    "passDeviceTo": "Pass the device to",
+    "areYouSure": "Are you sure you're {{name}}?",
+    "yesThatsMe": "Yes, that's me",
+    "continue": "Continue",
+    "endGameTitle": "Leave this round?",
+    "endGameMessage": "Your current round will be lost. Start a new round, or end the game and return to the Game Hub.",
+    "cancel": "Cancel",
+    "newGame": "New Game",
+    "endGame": "End Game"
+  },
+  "lobby": {
+    "playersTitle": "Players",
+    "playersCount": "{{count}} / {{max}} added · need at least {{min}} to start",
+    "playerNamePlaceholder": "Player name",
+    "add": "Add",
+    "remove": "Remove",
+    "variantTitle": "Variant",
+    "startGame": "Start Game"
+  },
+  "roleReveal": {
+    "turnOf": "{{name}}'s turn",
+    "tapToReveal": "Tap to reveal",
+    "tapToHide": "Tap to hide",
+    "noWordBluff": "No word — bluff!",
+    "startCluePhase": "Start Clue Phase",
+    "passToNextPlayer": "Pass to next player",
+    "revealHint": "Reveal your word, then hide it again before passing.",
+    "noActiveGame": "No active game to reveal.",
+    "playerLoadError": "Something went wrong loading this player.",
+    "role": {
+      "civilian": "You're a Civilian",
+      "undercover": "You're the Undercover",
+      "mrWhite": "You're Mr. White"
+    }
+  },
+  "clueTurn": {
+    "round": "Round {{number}}",
+    "openDiscussion": "Open discussion",
+    "discussionPrompt": "Talk it over — who sounded suspicious? Vote when you're ready.",
+    "startVote": "Start Vote",
+    "turnOf": "{{name}}'s turn",
+    "unknownPlayer": "Unknown player",
+    "cluePrompt": "Say one word describing your secret word out loud — no repeats.",
+    "done": "Done",
+    "nextPlayer": "Next Player",
+    "startDiscussion": "Start Discussion"
+  },
+  "vote": {
+    "noActivePlayers": "No active players to vote.",
+    "voteToEliminate": "{{name}}, vote to eliminate:",
+    "votesAreIn": "Votes are in",
+    "voteCount_one": "{{count}} vote",
+    "voteCount_other": "{{count}} votes",
+    "tie": "It's a tie between {{names}} — revote!",
+    "revote": "Revote",
+    "wasRole": "{{name}} was {{role}}!",
+    "role": {
+      "civilian": "a Civilian",
+      "undercover": "the Undercover",
+      "mrWhite": "Mr. White"
+    }
+  },
+  "mrWhiteGuess": {
+    "title": "Mr. White's last chance",
+    "prompt": "{{name}}, guess the Civilians' word to steal the win.",
+    "defaultName": "Mr. White",
+    "guessPlaceholder": "Your guess",
+    "submitGuess": "Submit Guess",
+    "correct": "Correct!",
+    "incorrect": "Not quite.",
+    "wordWas": "The word was \"{{word}}\"."
+  },
+  "gameOver": {
+    "winner": {
+      "civilians": "Civilians Win!",
+      "undercover": "Undercover Wins!",
+      "mrWhite": "Mr. White Wins!"
+    },
+    "gameOver": "Game Over",
+    "eliminatedSuffix": " (eliminated)",
+    "unknownRole": "Unknown",
+    "role": {
+      "civilian": "Civilian",
+      "undercover": "Undercover",
+      "mrWhite": "Mr. White"
+    },
+    "roleWithWord": "{{role}} — {{word}}",
+    "playAgain": "Play Again",
+    "newGame": "New Game"
+  }
+}

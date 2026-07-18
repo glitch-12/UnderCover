@@ -1,12 +1,14 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
 import { spacing, typography, useTheme } from '../../../shared/theme';
 import { resolveWinCheckAndNavigate } from '../gameFlow';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
+import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type MrWhiteGuessNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'MrWhiteGuess'>;
 
@@ -19,6 +21,8 @@ function normalize(word: string): string {
 export function MrWhiteGuess() {
   const navigation = useNavigation<MrWhiteGuessNavigationProp>();
   const colors = useTheme();
+  const { t } = useTranslation();
+  useConfirmEndGame(navigation);
 
   const players = useRoomStore((s) => s.players);
   const roleAssignments = useTurnStore((s) => s.roleAssignments);
@@ -61,13 +65,13 @@ export function MrWhiteGuess() {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Text style={[typography.title, styles.centerText, { color: colors.text }]}>
-          {result === 'correct' ? 'Correct!' : 'Not quite.'}
+          {result === 'correct' ? t('mrWhiteGuess.correct') : t('mrWhiteGuess.incorrect')}
         </Text>
         <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-          The word was "{civilianWord}".
+          {t('mrWhiteGuess.wordWas', { word: civilianWord })}
         </Text>
         <Pressable onPress={handleContinue} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-          <Text style={[typography.subtitle, styles.onPrimaryText]}>Continue</Text>
+          <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.continue')}</Text>
         </Pressable>
       </View>
     );
@@ -75,14 +79,14 @@ export function MrWhiteGuess() {
 
   return (
     <View style={[styles.centered, { backgroundColor: colors.background }]}>
-      <Text style={[typography.title, styles.centerText, { color: colors.text }]}>Mr. White's last chance</Text>
+      <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{t('mrWhiteGuess.title')}</Text>
       <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-        {mrWhitePlayer?.name ?? 'Mr. White'}, guess the Civilians' word to steal the win.
+        {t('mrWhiteGuess.prompt', { name: mrWhitePlayer?.name ?? t('mrWhiteGuess.defaultName') })}
       </Text>
       <TextInput
         value={guess}
         onChangeText={setGuess}
-        placeholder="Your guess"
+        placeholder={t('mrWhiteGuess.guessPlaceholder')}
         placeholderTextColor={colors.textSecondary}
         style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
         autoCapitalize="none"
@@ -96,7 +100,7 @@ export function MrWhiteGuess() {
         style={[styles.actionButton, { backgroundColor: canSubmit ? colors.primary : colors.border }]}
       >
         <Text style={[typography.subtitle, { color: canSubmit ? ON_PRIMARY_COLOR : colors.textSecondary }]}>
-          Submit Guess
+          {t('mrWhiteGuess.submitGuess')}
         </Text>
       </Pressable>
     </View>

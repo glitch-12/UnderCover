@@ -1,23 +1,18 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import type { Role } from '../../../core/types';
 import { spacing, typography, useTheme } from '../../../shared/theme';
 import { resolveWinCheckAndNavigate } from '../gameFlow';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
+import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type VoteNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'Vote'>;
 
 const ON_PRIMARY_COLOR = '#FFFFFF';
-
-const ROLE_REVEAL_LABEL: Record<Role, string> = {
-  civilian: 'a Civilian',
-  undercover: 'the Undercover',
-  mrWhite: 'Mr. White',
-};
 
 interface Tally {
   counts: Map<string, number>;
@@ -52,6 +47,8 @@ function advanceAfterElimination(eliminatedId: string, navigation: VoteNavigatio
 export function Vote() {
   const navigation = useNavigation<VoteNavigationProp>();
   const colors = useTheme();
+  const { t } = useTranslation();
+  useConfirmEndGame(navigation);
 
   const players = useRoomStore((s) => s.players);
   const turnOrder = useTurnStore((s) => s.turnOrder);
@@ -94,7 +91,7 @@ export function Vote() {
   if (activeOrder.length === 0) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <Text style={[typography.subtitle, { color: colors.text }]}>No active players to vote.</Text>
+        <Text style={[typography.subtitle, { color: colors.text }]}>{t('vote.noActivePlayers')}</Text>
       </View>
     );
   }
@@ -136,20 +133,22 @@ export function Vote() {
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
       {phase === 'voting' && confirmStage && (
         <View style={styles.centered}>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>Pass the device to</Text>
+          <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('common.passDeviceTo')}</Text>
           <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{currentVoter?.name}</Text>
           <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-            Are you sure you're {currentVoter?.name}?
+            {t('common.areYouSure', { name: currentVoter?.name })}
           </Text>
           <Pressable onPress={handleConfirmVoterIdentity} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-            <Text style={[typography.subtitle, styles.onPrimaryText]}>Yes, that's me</Text>
+            <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.yesThatsMe')}</Text>
           </Pressable>
         </View>
       )}
 
       {phase === 'voting' && !confirmStage && (
         <View style={styles.votingBlock}>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>{currentVoter?.name}, vote to eliminate:</Text>
+          <Text style={[typography.caption, { color: colors.textSecondary }]}>
+            {t('vote.voteToEliminate', { name: currentVoter?.name })}
+          </Text>
           {candidates
             .filter((id) => id !== currentVoterId)
             .map((candidateId) => {
@@ -171,7 +170,7 @@ export function Vote() {
 
       {phase === 'tally' && tally && (
         <View style={styles.centered}>
-          <Text style={[typography.title, styles.centerText, { color: colors.text }]}>Votes are in</Text>
+          <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{t('vote.votesAreIn')}</Text>
           <View style={styles.tallyList}>
             {candidates.map((candidateId) => {
               const candidate = playersById.get(candidateId);
@@ -179,7 +178,9 @@ export function Vote() {
               return (
                 <View key={candidateId} style={[styles.tallyRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
                   <Text style={[typography.body, { color: colors.text }]}>{candidate.name}</Text>
-                  <Text style={[typography.body, { color: colors.textSecondary }]}>{tally.counts.get(candidateId) ?? 0} vote(s)</Text>
+                  <Text style={[typography.body, { color: colors.textSecondary }]}>
+                    {t('vote.voteCount', { count: tally.counts.get(candidateId) ?? 0 })}
+                  </Text>
                 </View>
               );
             })}
@@ -188,22 +189,27 @@ export function Vote() {
           {tally.isTie ? (
             <>
               <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-                It's a tie between {tally.topCandidates.map((id) => playersById.get(id)?.name).join(' and ')} — revote!
+                {t('vote.tie', {
+                  names: tally.topCandidates.map((id) => playersById.get(id)?.name).join(' and '),
+                })}
               </Text>
               <Pressable onPress={handleRevote} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-                <Text style={[typography.subtitle, styles.onPrimaryText]}>Revote</Text>
+                <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('vote.revote')}</Text>
               </Pressable>
             </>
           ) : (
             <>
               <Text style={[typography.subtitle, styles.centerText, { color: colors.text }]}>
-                {eliminatedPlayer?.name} was {eliminatedAssignment ? ROLE_REVEAL_LABEL[eliminatedAssignment.role] : 'unknown'}!
+                {t('vote.wasRole', {
+                  name: eliminatedPlayer?.name,
+                  role: eliminatedAssignment ? t(`vote.role.${eliminatedAssignment.role}`) : t('gameOver.unknownRole'),
+                })}
               </Text>
               <Pressable
                 onPress={() => eliminatedId && advanceAfterElimination(eliminatedId, navigation)}
                 style={[styles.actionButton, { backgroundColor: colors.primary }]}
               >
-                <Text style={[typography.subtitle, styles.onPrimaryText]}>Continue</Text>
+                <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.continue')}</Text>
               </Pressable>
             </>
           )}

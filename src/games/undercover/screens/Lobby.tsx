@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { isRoomReadyForGame, useRoomStore } from '../../../core/room';
 import { spacing, typography, useTheme } from '../../../shared/theme';
@@ -19,6 +20,7 @@ const ON_PRIMARY_COLOR = '#FFFFFF';
 export function Lobby() {
   const navigation = useNavigation<LobbyNavigationProp>();
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const players = useRoomStore((s) => s.players);
   const addPlayer = useRoomStore((s) => s.addPlayer);
@@ -55,9 +57,13 @@ export function Lobby() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={[typography.subtitle, { color: colors.text }]}>Players</Text>
+      <Text style={[typography.subtitle, { color: colors.text }]}>{t('lobby.playersTitle')}</Text>
       <Text style={[typography.caption, { color: colors.textSecondary }]}>
-        {players.length} / {UNDERCOVER_MAX_PLAYERS} added · need at least {UNDERCOVER_MIN_PLAYERS} to start
+        {t('lobby.playersCount', {
+          count: players.length,
+          max: UNDERCOVER_MAX_PLAYERS,
+          min: UNDERCOVER_MIN_PLAYERS,
+        })}
       </Text>
 
       <View style={styles.addRow}>
@@ -65,7 +71,7 @@ export function Lobby() {
           value={name}
           onChangeText={setName}
           onSubmitEditing={handleAddPlayer}
-          placeholder="Player name"
+          placeholder={t('lobby.playerNamePlaceholder')}
           placeholderTextColor={colors.textSecondary}
           style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
           returnKeyType="done"
@@ -74,7 +80,7 @@ export function Lobby() {
           onPress={handleAddPlayer}
           style={[styles.addButton, { backgroundColor: colors.primary }]}
         >
-          <Text style={[typography.body, styles.addButtonText]}>Add</Text>
+          <Text style={[typography.body, styles.addButtonText]}>{t('lobby.add')}</Text>
         </Pressable>
       </View>
 
@@ -89,13 +95,13 @@ export function Lobby() {
             <View style={[styles.colorSwatch, { backgroundColor: player.color }]} />
             <Text style={[typography.body, styles.playerName, { color: colors.text }]}>{player.name}</Text>
             <Pressable onPress={() => removePlayer(player.id)}>
-              <Text style={[typography.body, { color: colors.textSecondary }]}>Remove</Text>
+              <Text style={[typography.body, { color: colors.textSecondary }]}>{t('lobby.remove')}</Text>
             </Pressable>
           </View>
         ))}
       </View>
 
-      <Text style={[typography.subtitle, styles.sectionTitle, { color: colors.text }]}>Variant</Text>
+      <Text style={[typography.subtitle, styles.sectionTitle, { color: colors.text }]}>{t('lobby.variantTitle')}</Text>
       <View style={styles.variantList}>
         {undercoverVariants.map((variant) => {
           const selected = variant.id === variantId;
@@ -121,7 +127,7 @@ export function Lobby() {
         style={[styles.startButton, { backgroundColor: canStart ? colors.primary : colors.border }]}
       >
         <Text style={[typography.subtitle, { color: canStart ? ON_PRIMARY_COLOR : colors.textSecondary }]}>
-          Start Game
+          {t('lobby.startGame')}
         </Text>
       </Pressable>
       {!canStart && (

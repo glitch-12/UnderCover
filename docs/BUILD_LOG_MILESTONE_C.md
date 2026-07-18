@@ -2,7 +2,7 @@
 
 Companion to [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) and [BUILD_LOG.md](./BUILD_LOG.md) (Steps 1–3). Covers Steps 8–13 — the full pass-and-play Undercover game loop, Lobby through Game Over. Same format as the earlier log: what was built, what broke, how it was fixed, and how it was verified.
 
-**Note on scope**: Milestone C in the plan runs through **Step 14** (Home Hub registry refactor). Step 14 has **not** been done yet — `src/app/screens/Home.tsx` still has its single hardcoded Undercover card from Step 3, not the `GameModule[]` registry pattern the plan calls for. Everything below is Steps 8–13 only.
+**Note on scope**: Milestone C in the plan runs through **Step 14** (Home Hub registry refactor). Step 14 is now done — see [Step 14](#step-14--home-hub-registry-refactor) below. Everything else below is Steps 8–13.
 
 Every step ended with the same three checks green: `npx tsc --noEmit`, `npx eslint src --ext .ts,.tsx`, `npx jest --no-coverage`. Where noted, steps also went through manual on-device testing on an Android emulator (Pixel_8, API 34) — see [Manual testing summary](#manual-testing-summary) at the end.
 
@@ -132,6 +132,19 @@ Debug logging was removed before finishing the step; confirmed clean via `grep -
 - "Play Again" end-to-end: skipped Lobby, landed fresh on RoleReveal, and the word pair genuinely changed on every replay across the session (`Coach/Captain` → `Momo/Dumpling` → `Stadium/Arena` → `Marvel/DC`), confirming the Step 5 no-immediate-repeat deck logic holds across full-game replays, not just within a single game.
 - "New Game" verified returning to Lobby with the same player roster intact.
 - Zero crashes across the entire session.
+
+---
+
+## Step 14 — Home Hub registry refactor
+
+Closed the scope gap noted at the top of this doc. Two new/changed files:
+
+- **`src/app/gameRegistry.ts`** (new) — the `GameModule` interface (`id`, `name`, `description`, `minPlayers`, `maxPlayers`, `route`) and a `gameModules: GameModule[]` array with a single `undercover` entry, sourcing its player-count bounds from `games/undercover/config` rather than duplicating the constants. `route` is typed as `keyof Omit<RootStackParamList, 'Home'>` via a type-only import from `app/Navigation.tsx`, so it's erased at compile time and doesn't introduce a runtime cycle between the registry and the navigator.
+- **`src/app/screens/Home.tsx`** — replaced the single hardcoded Undercover `Pressable` with a `.map()` over `gameModules`, navigating to each module's `route` on press.
+
+**DoD check**: adding a second title now only requires appending an entry to `gameModules` — no changes to `Home.tsx` needed. (Registering the new game's own stack screen in `Navigation.tsx` remains a separate, expected step — Step 14's DoD is scoped to hub *listing*, not full route auto-registration.)
+
+**Testing**: `npx tsc --noEmit`, `npm run lint`, and the full `npm test` suite (96 tests) all green. Not manually re-tested on-device since Home's rendered output is unchanged for the single-module case (same card, same navigation target) — the refactor is structural.
 
 ---
 

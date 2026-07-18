@@ -1,13 +1,14 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import type { Role } from '../../../core/types';
 import { spacing, typography, useTheme } from '../../../shared/theme';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
+import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type RoleRevealNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'RoleReveal'>;
 
@@ -15,15 +16,11 @@ type Stage = 'confirm' | 'hidden' | 'revealed';
 
 const ON_PRIMARY_COLOR = '#FFFFFF';
 
-const ROLE_LABEL: Record<Role, string> = {
-  civilian: "You're a Civilian",
-  undercover: "You're the Undercover",
-  mrWhite: "You're Mr. White",
-};
-
 export function RoleReveal() {
   const navigation = useNavigation<RoleRevealNavigationProp>();
   const colors = useTheme();
+  const { t } = useTranslation();
+  useConfirmEndGame(navigation);
 
   const players = useRoomStore((s) => s.players);
   const turnOrder = useTurnStore((s) => s.turnOrder);
@@ -65,7 +62,7 @@ export function RoleReveal() {
   if (turnOrder.length === 0) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <Text style={[typography.subtitle, { color: colors.text }]}>No active game to reveal.</Text>
+        <Text style={[typography.subtitle, { color: colors.text }]}>{t('roleReveal.noActiveGame')}</Text>
       </View>
     );
   }
@@ -78,7 +75,7 @@ export function RoleReveal() {
   if (!currentPlayer || !currentAssignment) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <Text style={[typography.subtitle, { color: colors.text }]}>Something went wrong loading this player.</Text>
+        <Text style={[typography.subtitle, { color: colors.text }]}>{t('roleReveal.playerLoadError')}</Text>
       </View>
     );
   }
@@ -116,36 +113,40 @@ export function RoleReveal() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {stage === 'confirm' ? (
         <View style={styles.centered}>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>Pass the device to</Text>
+          <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('common.passDeviceTo')}</Text>
           <Text style={[typography.title, styles.playerName, { color: colors.text }]}>{currentPlayer.name}</Text>
           <Text style={[typography.body, styles.confirmPrompt, { color: colors.textSecondary }]}>
-            Are you sure you're {currentPlayer.name}?
+            {t('common.areYouSure', { name: currentPlayer.name })}
           </Text>
           <Pressable
             onPress={handleConfirmIdentity}
             style={[styles.confirmButton, { backgroundColor: colors.primary }]}
           >
-            <Text style={[typography.subtitle, styles.onPrimaryText]}>Yes, that's me</Text>
+            <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.yesThatsMe')}</Text>
           </Pressable>
         </View>
       ) : (
         <View style={styles.centered}>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>{currentPlayer.name}'s turn</Text>
+          <Text style={[typography.caption, { color: colors.textSecondary }]}>
+            {t('roleReveal.turnOf', { name: currentPlayer.name })}
+          </Text>
 
           <Pressable onPress={handleFlip} style={styles.cardWrapper}>
             <Animated.View
               style={[styles.card, styles.cardFace, frontStyle, { backgroundColor: colors.surface, borderColor: colors.border }]}
             >
-              <Text style={[typography.subtitle, { color: colors.text }]}>Tap to reveal</Text>
+              <Text style={[typography.subtitle, { color: colors.text }]}>{t('roleReveal.tapToReveal')}</Text>
             </Animated.View>
             <Animated.View
               style={[styles.card, styles.cardFace, styles.cardBack, backStyle, { backgroundColor: colors.primary }]}
             >
-              <Text style={[typography.caption, styles.onPrimaryText]}>{ROLE_LABEL[currentAssignment.role]}</Text>
-              <Text style={[typography.title, styles.word, styles.onPrimaryText]}>
-                {currentAssignment.word ?? 'No word — bluff!'}
+              <Text style={[typography.caption, styles.onPrimaryText]}>
+                {t(`roleReveal.role.${currentAssignment.role}`)}
               </Text>
-              <Text style={[typography.caption, styles.onPrimaryText]}>Tap to hide</Text>
+              <Text style={[typography.title, styles.word, styles.onPrimaryText]}>
+                {currentAssignment.word ?? t('roleReveal.noWordBluff')}
+              </Text>
+              <Text style={[typography.caption, styles.onPrimaryText]}>{t('roleReveal.tapToHide')}</Text>
             </Animated.View>
           </Pressable>
 
@@ -155,13 +156,11 @@ export function RoleReveal() {
             style={[styles.continueButton, { backgroundColor: canContinue ? colors.primary : colors.border }]}
           >
             <Text style={[typography.subtitle, { color: canContinue ? ON_PRIMARY_COLOR : colors.textSecondary }]}>
-              {isLastPlayer ? 'Start Clue Phase' : 'Pass to next player'}
+              {isLastPlayer ? t('roleReveal.startCluePhase') : t('roleReveal.passToNextPlayer')}
             </Text>
           </Pressable>
           {!canContinue && (
-            <Text style={[typography.caption, { color: colors.textSecondary }]}>
-              Reveal your word, then hide it again before passing.
-            </Text>
+            <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('roleReveal.revealHint')}</Text>
           )}
         </View>
       )}
