@@ -2,7 +2,7 @@ import {
   createNativeStackNavigator,
   type NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import { UndercoverPlaceholder } from '../games/undercover/screens';
+import { UndercoverNavigator } from '../games/undercover/UndercoverNavigator';
 import { Home } from './screens';
 
 export type RootStackParamList = {
@@ -25,8 +25,8 @@ export function RootNavigator() {
       />
       <Stack.Screen
         name="Undercover"
-        component={UndercoverPlaceholder}
-        options={{ title: 'Undercover' }}
+        component={UndercoverNavigator}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
