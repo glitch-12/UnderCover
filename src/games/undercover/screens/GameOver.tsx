@@ -2,10 +2,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { spacing, typography, useTheme } from '../../../shared/theme';
+import { Button, Icon, RoleBadge, ScreenContainer } from '../../../shared/components';
+import { getContrastTextColor, getRoleColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
+import type { ThemeColors } from '../../../shared/theme';
 import { startUndercoverRound } from '../gameFlow';
 import { getLastVariantId } from '../gameSession';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
@@ -13,7 +15,12 @@ import { BACK_ACTION_TYPES } from '../useConfirmEndGame';
 
 type GameOverNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'GameOver'>;
 
-const ON_PRIMARY_COLOR = '#FFFFFF';
+function getWinnerColor(colors: ThemeColors, winner: 'civilians' | 'undercover' | 'mrWhite' | null): string {
+  if (winner === 'civilians') return colors.success;
+  if (winner === 'undercover') return colors.danger;
+  if (winner === 'mrWhite') return colors.warning;
+  return colors.primary;
+}
 
 export function GameOver() {
   const navigation = useNavigation<GameOverNavigationProp>();
@@ -27,6 +34,7 @@ export function GameOver() {
   const playAgain = useTurnStore((s) => s.playAgain);
 
   const assignmentsByPlayerId = useMemo(() => new Map(roleAssignments.map((a) => [a.playerId, a])), [roleAssignments]);
+  const winnerColor = getWinnerColor(colors, winner);
 
   function handlePlayAgain() {
     playAgain();
@@ -53,97 +61,124 @@ export function GameOver() {
   }, [navigation]);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
-      <Text style={[typography.title, styles.centerText, { color: colors.text }]}>
-        {winner ? t(`gameOver.winner.${winner}`) : t('gameOver.gameOver')}
-      </Text>
+    <ScreenContainer>
+      <View style={[styles.heroBanner, { backgroundColor: `${winnerColor}18`, borderColor: `${winnerColor}55` }]}>
+        <View style={[styles.trophyBadge, { backgroundColor: `${winnerColor}33` }]}>
+          <Icon name="award" size={32} color={winnerColor} />
+        </View>
+        <Text style={[typography.display, styles.centerText, { color: colors.text }]}>
+          {winner ? t(`gameOver.winner.${winner}`) : t('gameOver.gameOver')}
+        </Text>
+      </View>
 
       <View style={styles.roleList}>
         {players.map((player) => {
           const assignment = assignmentsByPlayerId.get(player.id);
           const eliminated = eliminatedPlayerIds.includes(player.id);
           const roleLabel = assignment ? t(`gameOver.role.${assignment.role}`) : null;
+          const accentColor = assignment ? getRoleColor(colors, assignment.role) : colors.border;
+
           return (
-            <View key={player.id} style={[styles.roleRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-              <View style={[styles.colorSwatch, { backgroundColor: player.color }]} />
+            <View
+              key={player.id}
+              style={[
+                styles.roleRow,
+                { borderColor: colors.border, backgroundColor: colors.surface, opacity: eliminated ? 0.55 : 1 },
+              ]}
+            >
+              <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
+              <View style={[styles.avatar, { backgroundColor: player.color }]}>
+                <Text style={[typography.caption, { color: getContrastTextColor(player.color) }]}>
+                  {player.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
               <View style={styles.roleInfo}>
-                <Text style={[typography.body, { color: colors.text }]}>
+                <Text style={[typography.bodyStrong, { color: colors.text }]} numberOfLines={1}>
                   {player.name}
                   {eliminated ? t('gameOver.eliminatedSuffix') : ''}
                 </Text>
-                <Text style={[typography.caption, { color: colors.textSecondary }]}>
-                  {assignment
-                    ? assignment.word
-                      ? t('gameOver.roleWithWord', { role: roleLabel, word: assignment.word })
-                      : roleLabel
-                    : t('gameOver.unknownRole')}
-                </Text>
+                {assignment && roleLabel ? (
+                  <View style={styles.badgeRow}>
+                    <RoleBadge role={assignment.role} label={roleLabel} />
+                    {assignment.word && (
+                      <Text style={[typography.caption, { color: colors.textSecondary }]}>{assignment.word}</Text>
+                    )}
+                  </View>
+                ) : (
+                  <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('gameOver.unknownRole')}</Text>
+                )}
               </View>
             </View>
           );
         })}
       </View>
 
-      <Pressable onPress={handlePlayAgain} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-        <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('gameOver.playAgain')}</Text>
-      </Pressable>
-      <Pressable
+      <Button title={t('gameOver.playAgain')} icon="refresh-cw" onPress={handlePlayAgain} style={styles.actionButton} />
+      <Button
+        title={t('gameOver.newGame')}
+        icon="home"
+        variant="outline"
         onPress={handleNewGame}
-        style={[styles.actionButton, styles.secondaryButton, { borderColor: colors.border }]}
-      >
-        <Text style={[typography.subtitle, { color: colors.text }]}>{t('gameOver.newGame')}</Text>
-      </Pressable>
-    </ScrollView>
+        style={styles.actionButton}
+      />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.md,
-    alignItems: 'center',
-  },
   centerText: {
     textAlign: 'center',
+  },
+  heroBanner: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radii.xl,
+    padding: spacing.lg,
+  },
+  trophyBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   roleList: {
     width: '100%',
     gap: spacing.xs,
+    marginTop: spacing.md,
   },
   roleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: spacing.sm,
+    overflow: 'hidden',
   },
-  colorSwatch: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  accentBar: {
+    width: 4,
+    alignSelf: 'stretch',
+    borderRadius: radii.pill,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   roleInfo: {
     flex: 1,
+    gap: 4,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   actionButton: {
     marginTop: spacing.sm,
-    borderRadius: 12,
-    padding: spacing.md,
-    alignItems: 'center',
-    width: 280,
-  },
-  secondaryButton: {
-    marginTop: 0,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-  },
-  onPrimaryText: {
-    color: ON_PRIMARY_COLOR,
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });

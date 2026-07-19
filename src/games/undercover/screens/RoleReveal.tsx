@@ -6,15 +6,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { spacing, typography, useTheme } from '../../../shared/theme';
+import { Button, Icon } from '../../../shared/components';
+import { getContrastTextColor, getRoleColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type RoleRevealNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'RoleReveal'>;
 
 type Stage = 'confirm' | 'hidden' | 'revealed';
-
-const ON_PRIMARY_COLOR = '#FFFFFF';
 
 export function RoleReveal() {
   const navigation = useNavigation<RoleRevealNavigationProp>();
@@ -108,22 +107,25 @@ export function RoleReveal() {
   }
 
   const canContinue = stage === 'hidden' && hasRevealed;
+  const roleColor = getRoleColor(colors, currentAssignment.role);
+  const roleTextColor = getContrastTextColor(roleColor);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {stage === 'confirm' ? (
         <View style={styles.centered}>
+          <Icon name="smartphone" size={28} color={colors.textSecondary} />
           <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('common.passDeviceTo')}</Text>
-          <Text style={[typography.title, styles.playerName, { color: colors.text }]}>{currentPlayer.name}</Text>
+          <Text style={[typography.display, styles.playerName, { color: colors.text }]}>{currentPlayer.name}</Text>
           <Text style={[typography.body, styles.confirmPrompt, { color: colors.textSecondary }]}>
             {t('common.areYouSure', { name: currentPlayer.name })}
           </Text>
-          <Pressable
+          <Button
+            title={t('common.yesThatsMe')}
+            icon="user-check"
             onPress={handleConfirmIdentity}
-            style={[styles.confirmButton, { backgroundColor: colors.primary }]}
-          >
-            <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.yesThatsMe')}</Text>
-          </Pressable>
+            style={styles.confirmButton}
+          />
         </View>
       ) : (
         <View style={styles.centered}>
@@ -131,34 +133,36 @@ export function RoleReveal() {
             {t('roleReveal.turnOf', { name: currentPlayer.name })}
           </Text>
 
-          <Pressable onPress={handleFlip} style={styles.cardWrapper}>
-            <Animated.View
-              style={[styles.card, styles.cardFace, frontStyle, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <Text style={[typography.subtitle, { color: colors.text }]}>{t('roleReveal.tapToReveal')}</Text>
-            </Animated.View>
-            <Animated.View
-              style={[styles.card, styles.cardFace, styles.cardBack, backStyle, { backgroundColor: colors.primary }]}
-            >
-              <Text style={[typography.caption, styles.onPrimaryText]}>
-                {t(`roleReveal.role.${currentAssignment.role}`)}
-              </Text>
-              <Text style={[typography.title, styles.word, styles.onPrimaryText]}>
-                {currentAssignment.word ?? t('roleReveal.noWordBluff')}
-              </Text>
-              <Text style={[typography.caption, styles.onPrimaryText]}>{t('roleReveal.tapToHide')}</Text>
-            </Animated.View>
-          </Pressable>
+          <View style={styles.glowWrapper}>
+            <View style={[styles.glowRing, styles.glowOuter, { backgroundColor: `${colors.primary}14` }]} />
+            <View style={[styles.glowRing, styles.glowInner, { backgroundColor: `${colors.primary}22` }]} />
 
-          <Pressable
+            <Pressable onPress={handleFlip} style={styles.cardWrapper}>
+              <Animated.View
+                style={[styles.card, styles.cardFace, frontStyle, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              >
+                <Icon name="eye" size={40} color={colors.primary} />
+                <Text style={[typography.subtitle, { color: colors.text }]}>{t('roleReveal.tapToReveal')}</Text>
+              </Animated.View>
+              <Animated.View
+                style={[styles.card, styles.cardFace, styles.cardBack, backStyle, { backgroundColor: roleColor }]}
+              >
+                <Text style={[typography.label, { color: roleTextColor }]}>{t(`roleReveal.role.${currentAssignment.role}`)}</Text>
+                <Text style={[typography.display, styles.word, { color: roleTextColor }]}>
+                  {currentAssignment.word ?? t('roleReveal.noWordBluff')}
+                </Text>
+                <Text style={[typography.caption, { color: roleTextColor }]}>{t('roleReveal.tapToHide')}</Text>
+              </Animated.View>
+            </Pressable>
+          </View>
+
+          <Button
+            title={isLastPlayer ? t('roleReveal.startCluePhase') : t('roleReveal.passToNextPlayer')}
+            icon={isLastPlayer ? 'play' : 'arrow-right'}
             onPress={handleContinue}
             disabled={!canContinue}
-            style={[styles.continueButton, { backgroundColor: canContinue ? colors.primary : colors.border }]}
-          >
-            <Text style={[typography.subtitle, { color: canContinue ? ON_PRIMARY_COLOR : colors.textSecondary }]}>
-              {isLastPlayer ? t('roleReveal.startCluePhase') : t('roleReveal.passToNextPlayer')}
-            </Text>
-          </Pressable>
+            style={styles.continueButton}
+          />
           {!canContinue && (
             <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('roleReveal.revealHint')}</Text>
           )}
@@ -187,14 +191,23 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     marginTop: spacing.md,
-    borderRadius: 12,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
+    width: 280,
   },
-  onPrimaryText: {
-    color: ON_PRIMARY_COLOR,
-    fontWeight: '600',
-    textAlign: 'center',
+  glowWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glowRing: {
+    position: 'absolute',
+    borderRadius: radii.pill,
+  },
+  glowOuter: {
+    width: 360,
+    height: 360,
+  },
+  glowInner: {
+    width: 300,
+    height: 300,
   },
   cardWrapper: {
     width: 280,
@@ -203,7 +216,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     height: '100%',
-    borderRadius: 20,
+    borderRadius: radii.xl,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -222,9 +235,6 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginTop: spacing.lg,
-    borderRadius: 12,
-    padding: spacing.md,
-    alignItems: 'center',
     width: 280,
   },
 });

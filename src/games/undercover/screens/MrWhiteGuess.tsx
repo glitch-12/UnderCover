@@ -2,17 +2,16 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { spacing, typography, useTheme } from '../../../shared/theme';
+import { Button, Icon } from '../../../shared/components';
+import { radii, spacing, typography, useTheme } from '../../../shared/theme';
 import { resolveWinCheckAndNavigate } from '../gameFlow';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type MrWhiteGuessNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'MrWhiteGuess'>;
-
-const ON_PRIMARY_COLOR = '#FFFFFF';
 
 function normalize(word: string): string {
   return word.trim().toLowerCase();
@@ -62,23 +61,29 @@ export function MrWhiteGuess() {
   }
 
   if (result) {
+    const isCorrect = result === 'correct';
+    const resultColor = isCorrect ? colors.success : colors.danger;
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <View style={[styles.resultIcon, { backgroundColor: `${resultColor}22` }]}>
+          <Icon name={isCorrect ? 'check-circle' : 'x-circle'} size={40} color={resultColor} />
+        </View>
         <Text style={[typography.title, styles.centerText, { color: colors.text }]}>
-          {result === 'correct' ? t('mrWhiteGuess.correct') : t('mrWhiteGuess.incorrect')}
+          {isCorrect ? t('mrWhiteGuess.correct') : t('mrWhiteGuess.incorrect')}
         </Text>
         <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
           {t('mrWhiteGuess.wordWas', { word: civilianWord })}
         </Text>
-        <Pressable onPress={handleContinue} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-          <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.continue')}</Text>
-        </Pressable>
+        <Button title={t('common.continue')} icon="arrow-right" onPress={handleContinue} style={styles.actionButton} />
       </View>
     );
   }
 
   return (
     <View style={[styles.centered, { backgroundColor: colors.background }]}>
+      <View style={[styles.promptIcon, { backgroundColor: `${colors.warning}22` }]}>
+        <Icon name="help-circle" size={40} color={colors.warning} />
+      </View>
       <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{t('mrWhiteGuess.title')}</Text>
       <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
         {t('mrWhiteGuess.prompt', { name: mrWhitePlayer?.name ?? t('mrWhiteGuess.defaultName') })}
@@ -94,15 +99,13 @@ export function MrWhiteGuess() {
         returnKeyType="done"
         onSubmitEditing={handleSubmitGuess}
       />
-      <Pressable
+      <Button
+        title={t('mrWhiteGuess.submitGuess')}
+        icon="send"
         onPress={handleSubmitGuess}
         disabled={!canSubmit}
-        style={[styles.actionButton, { backgroundColor: canSubmit ? colors.primary : colors.border }]}
-      >
-        <Text style={[typography.subtitle, { color: canSubmit ? ON_PRIMARY_COLOR : colors.textSecondary }]}>
-          {t('mrWhiteGuess.submitGuess')}
-        </Text>
-      </Pressable>
+        style={styles.actionButton}
+      />
     </View>
   );
 }
@@ -118,23 +121,29 @@ const styles = StyleSheet.create({
   centerText: {
     textAlign: 'center',
   },
+  promptIcon: {
+    width: 88,
+    height: 88,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultIcon: {
+    width: 88,
+    height: 88,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   input: {
     width: 280,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   actionButton: {
     marginTop: spacing.md,
-    borderRadius: 12,
-    padding: spacing.md,
-    alignItems: 'center',
     width: 280,
-  },
-  onPrimaryText: {
-    color: ON_PRIMARY_COLOR,
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });

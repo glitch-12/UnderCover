@@ -2,16 +2,15 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { spacing, typography, useTheme } from '../../../shared/theme';
+import { Button, Icon, ScreenContainer } from '../../../shared/components';
+import { getContrastTextColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type ClueTurnNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'ClueTurn'>;
-
-const ON_PRIMARY_COLOR = '#FFFFFF';
 
 export function ClueTurn() {
   const navigation = useNavigation<ClueTurnNavigationProp>();
@@ -53,24 +52,22 @@ export function ClueTurn() {
         <Text style={[typography.caption, { color: colors.textSecondary }]}>
           {t('clueTurn.round', { number: roundNumber })}
         </Text>
+        <View style={[styles.discussionIcon, { backgroundColor: `${colors.primary}22` }]}>
+          <Icon name="message-circle" size={36} color={colors.primary} />
+        </View>
         <Text style={[typography.title, styles.centerText, { color: colors.text }]}>
           {t('clueTurn.openDiscussion')}
         </Text>
         <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
           {t('clueTurn.discussionPrompt')}
         </Text>
-        <Pressable onPress={handleStartVote} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-          <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('clueTurn.startVote')}</Text>
-        </Pressable>
+        <Button title={t('clueTurn.startVote')} icon="flag" onPress={handleStartVote} style={styles.wideButton} />
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-    >
+    <ScreenContainer center>
       <Text style={[typography.caption, { color: colors.textSecondary }]}>
         {t('clueTurn.round', { number: roundNumber })}
       </Text>
@@ -81,42 +78,64 @@ export function ClueTurn() {
         {t('clueTurn.cluePrompt')}
       </Text>
 
-      <View style={styles.orderList}>
+      <View style={styles.timeline}>
         {activeOrder.map((playerId, index) => {
           const player = playersById.get(playerId);
           if (!player) return null;
           const isCurrent = playerId === currentTurnPlayerId;
           const isDone = index < currentIndex;
-          const rowBackground = isCurrent ? colors.primary : colors.surface;
-          const nameColor = isCurrent ? ON_PRIMARY_COLOR : colors.text;
+          const isLast = index === activeOrder.length - 1;
+
           return (
-            <View key={playerId} style={[styles.orderRow, { borderColor: colors.border, backgroundColor: rowBackground }]}>
-              <View style={[styles.colorSwatch, { backgroundColor: player.color }]} />
-              <Text style={[typography.body, styles.playerName, { color: nameColor }]}>{player.name}</Text>
-              {isDone && <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('clueTurn.done')}</Text>}
+            <View key={playerId} style={styles.stepRow}>
+              <View style={styles.stepIndicator}>
+                <View
+                  style={[
+                    styles.avatarRing,
+                    { backgroundColor: isCurrent ? `${colors.primary}22` : 'transparent' },
+                  ]}
+                >
+                  <View style={[styles.avatar, { backgroundColor: player.color }]}>
+                    {isDone ? (
+                      <Icon name="check" size={14} color={getContrastTextColor(player.color)} />
+                    ) : (
+                      <Text style={[typography.caption, { color: getContrastTextColor(player.color) }]}>
+                        {player.name.charAt(0).toUpperCase()}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                {!isLast && <View style={[styles.connector, { backgroundColor: colors.border }]} />}
+              </View>
+
+              <View style={styles.stepContent}>
+                <Text
+                  style={[typography.bodyStrong, { color: isCurrent ? colors.text : colors.textSecondary }]}
+                  numberOfLines={1}
+                >
+                  {player.name}
+                </Text>
+                {isCurrent && (
+                  <Text style={[typography.caption, { color: colors.primary }]}>{t('clueTurn.speakingNow')}</Text>
+                )}
+                {isDone && <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('clueTurn.done')}</Text>}
+              </View>
             </View>
           );
         })}
       </View>
 
-      <Pressable onPress={handleNextTurn} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-        <Text style={[typography.subtitle, styles.onPrimaryText]}>
-          {isLastTurn ? t('clueTurn.startDiscussion') : t('clueTurn.nextPlayer')}
-        </Text>
-      </Pressable>
-    </ScrollView>
+      <Button
+        title={isLastTurn ? t('clueTurn.startDiscussion') : t('clueTurn.nextPlayer')}
+        icon={isLastTurn ? 'message-circle' : 'arrow-right'}
+        onPress={handleNextTurn}
+        style={styles.wideButton}
+      />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.sm,
-    alignItems: 'center',
-  },
   centered: {
     flex: 1,
     alignItems: 'center',
@@ -127,37 +146,50 @@ const styles = StyleSheet.create({
   centerText: {
     textAlign: 'center',
   },
-  orderList: {
+  discussionIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeline: {
     width: '100%',
-    gap: spacing.xs,
     marginTop: spacing.md,
   },
-  orderRow: {
+  stepRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: spacing.sm,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: spacing.sm,
   },
-  colorSwatch: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  playerName: {
-    flex: 1,
-  },
-  actionButton: {
-    marginTop: spacing.lg,
-    borderRadius: 12,
-    padding: spacing.md,
+  stepIndicator: {
     alignItems: 'center',
-    width: 280,
   },
-  onPrimaryText: {
-    color: ON_PRIMARY_COLOR,
-    fontWeight: '600',
-    textAlign: 'center',
+  avatarRing: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  connector: {
+    width: 2,
+    flex: 1,
+    minHeight: spacing.sm,
+  },
+  stepContent: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: spacing.md,
+  },
+  wideButton: {
+    marginTop: spacing.lg,
+    width: 280,
   },
 });

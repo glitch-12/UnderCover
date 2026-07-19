@@ -11,7 +11,7 @@ import '../i18n';
 import { RootNavigator } from './Navigation';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const isDarkMode = useColorScheme() !== 'light';
 
   return (
     <GestureHandlerRootView style={styles.root}>

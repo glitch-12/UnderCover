@@ -43,6 +43,7 @@
     "turnOf": "{{name}}'s turn",
     "unknownPlayer": "Unknown player",
     "cluePrompt": "Say one word describing your secret word out loud — no repeats.",
+    "speakingNow": "Speaking now",
     "done": "Done",
     "nextPlayer": "Next Player",
     "startDiscussion": "Start Discussion"

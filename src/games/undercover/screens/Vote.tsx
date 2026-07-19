@@ -2,17 +2,16 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { spacing, typography, useTheme } from '../../../shared/theme';
+import { Button, Icon, ScreenContainer } from '../../../shared/components';
+import { radii, spacing, typography, useTheme } from '../../../shared/theme';
 import { resolveWinCheckAndNavigate } from '../gameFlow';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
 
 type VoteNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'Vote'>;
-
-const ON_PRIMARY_COLOR = '#FFFFFF';
 
 interface Tally {
   counts: Map<string, number>;
@@ -87,6 +86,11 @@ export function Vote() {
   );
 
   const tally = phase === 'tally' ? tallyVotes(candidates, roundVotes) : null;
+  const sortedCandidates = useMemo(() => {
+    if (!tally) return candidates;
+    return [...candidates].sort((a, b) => (tally.counts.get(b) ?? 0) - (tally.counts.get(a) ?? 0));
+  }, [candidates, tally]);
+  const maxVotes = tally ? Math.max(1, ...candidates.map((id) => tally.counts.get(id) ?? 0)) : 1;
 
   if (activeOrder.length === 0) {
     return (
@@ -130,17 +134,21 @@ export function Vote() {
   const eliminatedAssignment = eliminatedId ? assignmentsByPlayerId.get(eliminatedId) : undefined;
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
+    <ScreenContainer>
       {phase === 'voting' && confirmStage && (
         <View style={styles.centered}>
+          <Icon name="smartphone" size={28} color={colors.textSecondary} />
           <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('common.passDeviceTo')}</Text>
           <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{currentVoter?.name}</Text>
           <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
             {t('common.areYouSure', { name: currentVoter?.name })}
           </Text>
-          <Pressable onPress={handleConfirmVoterIdentity} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-            <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.yesThatsMe')}</Text>
-          </Pressable>
+          <Button
+            title={t('common.yesThatsMe')}
+            icon="user-check"
+            onPress={handleConfirmVoterIdentity}
+            style={styles.actionButton}
+          />
         </View>
       )}
 
@@ -158,10 +166,11 @@ export function Vote() {
                 <Pressable
                   key={candidateId}
                   onPress={() => handleCastVote(candidateId)}
-                  style={[styles.candidateRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  style={[styles.candidateCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 >
-                  <View style={[styles.colorSwatch, { backgroundColor: candidate.color }]} />
-                  <Text style={[typography.body, { color: colors.text }]}>{candidate.name}</Text>
+                  <View style={[styles.accentBar, { backgroundColor: candidate.color }]} />
+                  <Text style={[typography.bodyStrong, styles.candidateName, { color: colors.text }]}>{candidate.name}</Text>
+                  <Icon name="target" size={18} color={colors.textSecondary} />
                 </Pressable>
               );
             })}
@@ -172,15 +181,28 @@ export function Vote() {
         <View style={styles.centered}>
           <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{t('vote.votesAreIn')}</Text>
           <View style={styles.tallyList}>
-            {candidates.map((candidateId) => {
+            {sortedCandidates.map((candidateId) => {
               const candidate = playersById.get(candidateId);
               if (!candidate) return null;
+              const count = tally.counts.get(candidateId) ?? 0;
+              const isTop = tally.topCandidates.includes(candidateId);
+              const barColor = isTop ? (tally.isTie ? colors.warning : colors.primary) : colors.textSecondary;
               return (
-                <View key={candidateId} style={[styles.tallyRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-                  <Text style={[typography.body, { color: colors.text }]}>{candidate.name}</Text>
-                  <Text style={[typography.body, { color: colors.textSecondary }]}>
-                    {t('vote.voteCount', { count: tally.counts.get(candidateId) ?? 0 })}
-                  </Text>
+                <View key={candidateId} style={styles.tallyRow}>
+                  <View style={styles.tallyHeader}>
+                    <Text style={[typography.body, { color: colors.text }]}>{candidate.name}</Text>
+                    <Text style={[typography.caption, { color: colors.textSecondary }]}>
+                      {t('vote.voteCount', { count })}
+                    </Text>
+                  </View>
+                  <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
+                    <View
+                      style={[
+                        styles.barFill,
+                        { width: `${Math.max(4, (count / maxVotes) * 100)}%`, backgroundColor: barColor },
+                      ]}
+                    />
+                  </View>
                 </View>
               );
             })}
@@ -188,14 +210,15 @@ export function Vote() {
 
           {tally.isTie ? (
             <>
-              <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-                {t('vote.tie', {
-                  names: tally.topCandidates.map((id) => playersById.get(id)?.name).join(' and '),
-                })}
-              </Text>
-              <Pressable onPress={handleRevote} style={[styles.actionButton, { backgroundColor: colors.primary }]}>
-                <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('vote.revote')}</Text>
-              </Pressable>
+              <View style={[styles.tieBanner, { backgroundColor: `${colors.warning}22`, borderColor: colors.warning }]}>
+                <Icon name="alert-triangle" size={16} color={colors.warning} />
+                <Text style={[typography.caption, styles.tieText, { color: colors.warning }]}>
+                  {t('vote.tie', {
+                    names: tally.topCandidates.map((id) => playersById.get(id)?.name).join(' and '),
+                  })}
+                </Text>
+              </View>
+              <Button title={t('vote.revote')} icon="rotate-cw" onPress={handleRevote} style={styles.actionButton} />
             </>
           ) : (
             <>
@@ -205,28 +228,21 @@ export function Vote() {
                   role: eliminatedAssignment ? t(`vote.role.${eliminatedAssignment.role}`) : t('gameOver.unknownRole'),
                 })}
               </Text>
-              <Pressable
+              <Button
+                title={t('common.continue')}
+                icon="arrow-right"
                 onPress={() => eliminatedId && advanceAfterElimination(eliminatedId, navigation)}
-                style={[styles.actionButton, { backgroundColor: colors.primary }]}
-              >
-                <Text style={[typography.subtitle, styles.onPrimaryText]}>{t('common.continue')}</Text>
-              </Pressable>
+                style={styles.actionButton}
+              />
             </>
           )}
         </View>
       )}
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
   centered: {
     flex: 1,
     alignItems: 'center',
@@ -240,40 +256,57 @@ const styles = StyleSheet.create({
   votingBlock: {
     gap: spacing.sm,
   },
-  candidateRow: {
+  candidateCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: spacing.md,
+    overflow: 'hidden',
   },
-  colorSwatch: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  accentBar: {
+    width: 4,
+    alignSelf: 'stretch',
+    borderRadius: radii.pill,
+  },
+  candidateName: {
+    flex: 1,
   },
   tallyList: {
     width: '100%',
-    gap: spacing.xs,
+    gap: spacing.md,
   },
   tallyRow: {
+    gap: spacing.xs,
+  },
+  tallyHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  barTrack: {
+    height: 8,
+    borderRadius: radii.pill,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: radii.pill,
+  },
+  tieBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: spacing.sm,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    width: '100%',
+  },
+  tieText: {
+    flex: 1,
   },
   actionButton: {
     marginTop: spacing.lg,
-    borderRadius: 12,
-    padding: spacing.md,
-    alignItems: 'center',
     width: 280,
-  },
-  onPrimaryText: {
-    color: ON_PRIMARY_COLOR,
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });
