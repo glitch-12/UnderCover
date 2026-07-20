@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "753010866954",
+    "project_id": "undercover-29e20",
+    "storage_bucket": "undercover-29e20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753010866954:android:cf359072b5befad00458f3",
+        "android_client_info": {
+          "package_name": "com.glitch.undercover"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClPUDW1z2qBTuh0CAZS0M4Mk9_EPshrlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

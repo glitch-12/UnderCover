@@ -16,7 +16,6 @@ function makePlayers(count: number): Player[] {
     id: `p${i}`,
     name: `Player ${i}`,
     color: '#000',
-    isEliminated: false,
   }));
 }
 

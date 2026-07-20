@@ -6,7 +6,6 @@ export interface Player {
   id: string;
   name: string;
   color: string;
-  isEliminated: boolean;
 }
 
 export interface WordPair {

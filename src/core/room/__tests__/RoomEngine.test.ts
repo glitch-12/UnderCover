@@ -11,7 +11,7 @@ describe('addPlayer', () => {
 
     const { players } = useRoomStore.getState();
     expect(players).toHaveLength(1);
-    expect(players[0]).toMatchObject({ name: 'Asha', color: '#ff0000', isEliminated: false });
+    expect(players[0]).toMatchObject({ name: 'Asha', color: '#ff0000' });
     expect(players[0].id).toBeTruthy();
   });
 
@@ -129,7 +129,6 @@ describe('isRoomReadyForGame', () => {
       id: `p${i}`,
       name: `P${i}`,
       color: '#000',
-      isEliminated: false,
     }));
     expect(isRoomReadyForGame(players, 3, 20).success).toBe(false);
   });

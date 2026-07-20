@@ -1,4 +1,4 @@
-package com.undercover
+package com.glitch.undercover
 
 import android.app.Application
 import com.facebook.react.PackageList

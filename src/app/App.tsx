@@ -8,6 +8,7 @@ import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../i18n';
+import { ErrorBoundary } from './ErrorBoundary';
 import { RootNavigator } from './Navigation';
 
 function App() {
@@ -18,7 +19,9 @@ function App() {
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <NavigationContainer>
-          <RootNavigator />
+          <ErrorBoundary>
+            <RootNavigator />
+          </ErrorBoundary>
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>

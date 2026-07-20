@@ -1,8 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View } from 'react-native';
-import { Card, Icon } from '../../shared/components';
-import { radii, spacing, typography, useTheme } from '../../shared/theme';
+import { Fragment } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Icon } from '../../shared/components';
+import { elevation, radii, spacing, typography, useTheme } from '../../shared/theme';
 import { gameModules } from '../gameRegistry';
 import type { RootStackParamList } from '../Navigation';
 
@@ -20,18 +21,29 @@ export function Home() {
         <Text style={[typography.body, { color: colors.textSecondary }]}>Pick a game to start playing</Text>
       </View>
 
-      {gameModules.map((module) => (
-        <Card key={module.id} onPress={() => navigation.navigate(module.route)} elevationLevel="md" style={styles.card}>
-          <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}22` }]}>
-            <Icon name={module.icon} size={22} color={colors.primary} />
-          </View>
-          <View style={styles.cardText}>
-            <Text style={[typography.subtitle, { color: colors.text }]}>{module.name}</Text>
-            <Text style={[typography.caption, { color: colors.textSecondary }]}>{module.description}</Text>
-          </View>
-          <Icon name="chevron-right" size={20} color={colors.textSecondary} />
-        </Card>
-      ))}
+      <View style={[styles.headerRule, { backgroundColor: colors.border }]} />
+
+      <Text style={[typography.label, styles.sectionLabel, { color: colors.textSecondary }]}>Games</Text>
+      <View style={[styles.listCard, elevation('md'), { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        {gameModules.map((module, index) => (
+          <Fragment key={module.id}>
+            {index > 0 && <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />}
+            <Pressable
+              onPress={() => navigation.navigate(module.route)}
+              style={({ pressed }) => [styles.row, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}22` }]}>
+                <Icon name={module.icon} size={22} color={colors.primary} />
+              </View>
+              <View style={styles.rowText}>
+                <Text style={[typography.subtitle, { color: colors.text }]}>{module.name}</Text>
+                <Text style={[typography.caption, { color: colors.textSecondary }]}>{module.description}</Text>
+              </View>
+              <Icon name="chevron-right" size={20} color={colors.textSecondary} />
+            </Pressable>
+          </Fragment>
+        ))}
+      </View>
     </View>
   );
 }
@@ -43,13 +55,28 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   header: {
-    marginBottom: spacing.sm,
     gap: spacing.xs,
   },
-  card: {
+  headerRule: {
+    height: StyleSheet.hairlineWidth,
+  },
+  sectionLabel: {
+    marginTop: spacing.xs,
+  },
+  listCard: {
+    borderWidth: 1,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+  },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    padding: spacing.md,
+  },
+  rowDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: spacing.md + 48 + spacing.md,
   },
   iconBadge: {
     width: 48,
@@ -58,7 +85,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardText: {
+  rowText: {
     flex: 1,
     gap: 2,
   },

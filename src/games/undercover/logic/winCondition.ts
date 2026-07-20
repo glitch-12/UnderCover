@@ -9,7 +9,7 @@ export function checkWinner(remainingRoles: RoleAssignment[]): 'civilians' | 'un
   if (undercoverCount === 0 && mrWhiteCount === 0) {
     return 'civilians';
   }
-  if (undercoverCount >= civilianCount) {
+  if (undercoverCount > 0 && undercoverCount >= civilianCount) {
     return 'undercover';
   }
   return null;

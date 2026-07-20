@@ -3,14 +3,16 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { Button, Icon, ScreenContainer } from '../../../shared/components';
-import { getContrastTextColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
+import { Avatar, Button, Icon, ScreenContainer } from '../../../shared/components';
+import { radii, spacing, typography, useTheme } from '../../../shared/theme';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
+import { useRoster } from '../useRoster';
 
 type ClueTurnNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'ClueTurn'>;
+
+const TRANSPARENT_RING_STYLE = { backgroundColor: 'transparent' };
 
 export function ClueTurn() {
   const navigation = useNavigation<ClueTurnNavigationProp>();
@@ -18,20 +20,13 @@ export function ClueTurn() {
   const { t } = useTranslation();
   useConfirmEndGame(navigation);
 
-  const players = useRoomStore((s) => s.players);
   const phase = useTurnStore((s) => s.phase);
   const roundNumber = useTurnStore((s) => s.roundNumber);
-  const turnOrder = useTurnStore((s) => s.turnOrder);
-  const eliminatedPlayerIds = useTurnStore((s) => s.eliminatedPlayerIds);
   const currentTurnPlayerId = useTurnStore((s) => s.currentTurnPlayerId);
   const advanceClueTurn = useTurnStore((s) => s.advanceClueTurn);
   const startVote = useTurnStore((s) => s.startVote);
-
-  const playersById = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
-  const activeOrder = useMemo(
-    () => turnOrder.filter((id) => !eliminatedPlayerIds.includes(id)),
-    [turnOrder, eliminatedPlayerIds],
-  );
+  const { playersById, activeOrder } = useRoster();
+  const highlightedRingStyle = useMemo(() => ({ backgroundColor: `${colors.primary}22` }), [colors]);
 
   const currentPlayer = currentTurnPlayerId ? playersById.get(currentTurnPlayerId) : undefined;
   const currentIndex = currentTurnPlayerId ? activeOrder.indexOf(currentTurnPlayerId) : -1;
@@ -89,21 +84,8 @@ export function ClueTurn() {
           return (
             <View key={playerId} style={styles.stepRow}>
               <View style={styles.stepIndicator}>
-                <View
-                  style={[
-                    styles.avatarRing,
-                    { backgroundColor: isCurrent ? `${colors.primary}22` : 'transparent' },
-                  ]}
-                >
-                  <View style={[styles.avatar, { backgroundColor: player.color }]}>
-                    {isDone ? (
-                      <Icon name="check" size={14} color={getContrastTextColor(player.color)} />
-                    ) : (
-                      <Text style={[typography.caption, { color: getContrastTextColor(player.color) }]}>
-                        {player.name.charAt(0).toUpperCase()}
-                      </Text>
-                    )}
-                  </View>
+                <View style={[styles.avatarRing, isCurrent ? highlightedRingStyle : TRANSPARENT_RING_STYLE]}>
+                  <Avatar name={player.name} color={player.color} checked={isDone} />
                 </View>
                 {!isLast && <View style={[styles.connector, { backgroundColor: colors.border }]} />}
               </View>
@@ -167,13 +149,6 @@ const styles = StyleSheet.create({
   avatarRing: {
     width: 44,
     height: 44,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatar: {
-    width: 32,
-    height: 32,
     borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',

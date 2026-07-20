@@ -1,4 +1,4 @@
-package com.undercover
+package com.glitch.undercover
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

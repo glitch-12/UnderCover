@@ -2109,7 +2109,29 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets (0.11.0):
+  - RNVectorIcons (10.3.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - RNWorklets (0.11.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2131,10 +2153,10 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNWorklets/apple (= 0.11.0)
-    - RNWorklets/common (= 0.11.0)
+    - RNWorklets/apple (= 0.11.1)
+    - RNWorklets/common (= 0.11.1)
     - Yoga
-  - RNWorklets/apple (0.11.0):
+  - RNWorklets/apple (0.11.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2157,7 +2179,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets/common (0.11.0):
+  - RNWorklets/common (0.11.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2264,6 +2286,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2433,6 +2456,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
   RNWorklets:
     :path: "../node_modules/react-native-worklets"
   Yoga:
@@ -2520,7 +2545,8 @@ SPEC CHECKSUMS:
   RNGestureHandler: 6206fc566272f60a2d57a0b3258c495a73b7dc90
   RNReanimated: 3d86c08827da077d5e4ee9b2107ac2d5256310b5
   RNScreens: dcd5c85a822d9cbb21fc321bbbbcf918f3d48c23
-  RNWorklets: 56302393ae30a143943e2605fb0d2fd4ba745736
+  RNVectorIcons: 9d52f79c911eb6099a14b8135bd261ccef039fcb
+  RNWorklets: f1482be4f8b0223a749156b597cf4e0bc63a2832
   Yoga: 94172d87dd5d83fc929bf1ee53121b5d4490b5f2
 
 PODFILE CHECKSUM: f09269eeaeae44470c8001ef0151a970d8de9536

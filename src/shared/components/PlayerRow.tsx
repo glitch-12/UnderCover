@@ -1,6 +1,8 @@
 import type React from 'react';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { getContrastTextColor, radii, spacing, typography, useTheme } from '../theme';
+import { radii, spacing, typography, useTheme } from '../theme';
+import { Avatar } from './Avatar';
 
 interface PlayerRowProps {
   name: string;
@@ -13,22 +15,18 @@ interface PlayerRowProps {
 
 export function PlayerRow({ name, color, onPress, selected, muted, trailing }: PlayerRowProps) {
   const colors = useTheme();
-  const initial = name.trim().charAt(0).toUpperCase() || '?';
+  const rowStyle = useMemo(
+    () => ({
+      backgroundColor: selected ? colors.primary : colors.surface,
+      borderColor: selected ? colors.primary : colors.border,
+      opacity: muted ? 0.5 : 1,
+    }),
+    [colors, selected, muted],
+  );
 
   const body = (
-    <View
-      style={[
-        styles.row,
-        {
-          backgroundColor: selected ? colors.primary : colors.surface,
-          borderColor: selected ? colors.primary : colors.border,
-          opacity: muted ? 0.5 : 1,
-        },
-      ]}
-    >
-      <View style={[styles.avatar, { backgroundColor: color }]}>
-        <Text style={[typography.caption, styles.initial, { color: getContrastTextColor(color) }]}>{initial}</Text>
-      </View>
+    <View style={[styles.row, rowStyle]}>
+      <Avatar name={name} color={color} />
       <Text
         style={[typography.bodyStrong, styles.name, { color: selected ? colors.onPrimary : colors.text }]}
         numberOfLines={1}
@@ -56,16 +54,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radii.md,
     padding: spacing.sm,
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initial: {
-    fontWeight: '700',
   },
   name: {
     flex: 1,

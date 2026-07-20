@@ -1,15 +1,15 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { Button, Icon, ScreenContainer } from '../../../shared/components';
+import { Button, Icon, PassDevicePrompt, ScreenContainer } from '../../../shared/components';
 import { radii, spacing, typography, useTheme } from '../../../shared/theme';
 import { resolveWinCheckAndNavigate } from '../gameFlow';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
+import { useRoster } from '../useRoster';
 
 type VoteNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'Vote'>;
 
@@ -49,17 +49,7 @@ export function Vote() {
   const { t } = useTranslation();
   useConfirmEndGame(navigation);
 
-  const players = useRoomStore((s) => s.players);
-  const turnOrder = useTurnStore((s) => s.turnOrder);
-  const eliminatedPlayerIds = useTurnStore((s) => s.eliminatedPlayerIds);
-  const roleAssignments = useTurnStore((s) => s.roleAssignments);
-
-  const playersById = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
-  const assignmentsByPlayerId = useMemo(() => new Map(roleAssignments.map((a) => [a.playerId, a])), [roleAssignments]);
-  const activeOrder = useMemo(
-    () => turnOrder.filter((id) => !eliminatedPlayerIds.includes(id)),
-    [turnOrder, eliminatedPlayerIds],
-  );
+  const { playersById, assignmentsByPlayerId, activeOrder } = useRoster();
 
   const [voterOrder, setVoterOrder] = useState<string[]>(activeOrder);
   const [candidates, setCandidates] = useState<string[]>(activeOrder);
@@ -67,6 +57,10 @@ export function Vote() {
   const [voterIndex, setVoterIndex] = useState(0);
   const [confirmStage, setConfirmStage] = useState(true);
   const [phase, setPhase] = useState<'voting' | 'tally'>('voting');
+  // Guards against a fast double-tap on a candidate card firing handleCastVote
+  // twice before the re-render that swaps this voter's view away — without
+  // it, voterIndex advances by 2 and one voter gets silently skipped.
+  const votingLockRef = useRef(false);
 
   // This screen is re-entered every voting round within a game (and again on
   // "Play Again"), but React Navigation keeps the screen instance mounted —
@@ -85,7 +79,10 @@ export function Vote() {
     }, []),
   );
 
-  const tally = phase === 'tally' ? tallyVotes(candidates, roundVotes) : null;
+  const tally = useMemo(
+    () => (phase === 'tally' ? tallyVotes(candidates, roundVotes) : null),
+    [phase, candidates, roundVotes],
+  );
   const sortedCandidates = useMemo(() => {
     if (!tally) return candidates;
     return [...candidates].sort((a, b) => (tally.counts.get(b) ?? 0) - (tally.counts.get(a) ?? 0));
@@ -104,10 +101,14 @@ export function Vote() {
   const currentVoter = playersById.get(currentVoterId);
 
   function handleConfirmVoterIdentity() {
+    votingLockRef.current = false;
     setConfirmStage(false);
   }
 
   function handleCastVote(targetId: string) {
+    if (votingLockRef.current) return;
+    votingLockRef.current = true;
+
     const nextVotes = { ...roundVotes, [currentVoterId]: targetId };
     setRoundVotes(nextVotes);
 
@@ -135,20 +136,9 @@ export function Vote() {
 
   return (
     <ScreenContainer>
-      {phase === 'voting' && confirmStage && (
+      {phase === 'voting' && confirmStage && currentVoter && (
         <View style={styles.centered}>
-          <Icon name="smartphone" size={28} color={colors.textSecondary} />
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('common.passDeviceTo')}</Text>
-          <Text style={[typography.title, styles.centerText, { color: colors.text }]}>{currentVoter?.name}</Text>
-          <Text style={[typography.body, styles.centerText, { color: colors.textSecondary }]}>
-            {t('common.areYouSure', { name: currentVoter?.name })}
-          </Text>
-          <Button
-            title={t('common.yesThatsMe')}
-            icon="user-check"
-            onPress={handleConfirmVoterIdentity}
-            style={styles.actionButton}
-          />
+          <PassDevicePrompt name={currentVoter.name} color={currentVoter.color} onConfirm={handleConfirmVoterIdentity} />
         </View>
       )}
 

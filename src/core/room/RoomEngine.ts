@@ -41,7 +41,6 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
       id: generatePlayerId(),
       name: trimmedName,
       color,
-      isEliminated: false,
     };
     set((state) => ({ players: [...state.players, player] }));
     return { success: true };

@@ -38,4 +38,8 @@ describe('checkWinner', () => {
   it('handles the fully-eliminated edge case without crashing', () => {
     expect(checkWinner(roles(0, 0, 0))).toBe('civilians');
   });
+
+  it('does not declare undercover the winner when none remain, even with 0 civilians left and Mr. White alive', () => {
+    expect(checkWinner(roles(0, 0, 1))).toBeNull();
+  });
 });

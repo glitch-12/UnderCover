@@ -1,15 +1,15 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { Button, Icon } from '../../../shared/components';
+import { Button, Icon, PassDevicePrompt } from '../../../shared/components';
 import { getContrastTextColor, getRoleColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { useConfirmEndGame } from '../useConfirmEndGame';
+import { useRoster } from '../useRoster';
 
 type RoleRevealNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'RoleReveal'>;
 
@@ -21,18 +21,17 @@ export function RoleReveal() {
   const { t } = useTranslation();
   useConfirmEndGame(navigation);
 
-  const players = useRoomStore((s) => s.players);
-  const turnOrder = useTurnStore((s) => s.turnOrder);
-  const roleAssignments = useTurnStore((s) => s.roleAssignments);
   const confirmRoleAssignmentComplete = useTurnStore((s) => s.confirmRoleAssignmentComplete);
-
-  const playersById = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
-  const assignmentsByPlayerId = useMemo(() => new Map(roleAssignments.map((a) => [a.playerId, a])), [roleAssignments]);
+  const { turnOrder, playersById, assignmentsByPlayerId } = useRoster();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [stage, setStage] = useState<Stage>('confirm');
   const [hasRevealed, setHasRevealed] = useState(false);
   const rotation = useSharedValue(0);
+  // Guards against a fast double-tap on "Pass to Next Player" firing
+  // handleContinue twice before the re-render that swaps this player's view
+  // away — without it, currentIndex advances by 2 and one player is skipped.
+  const continueLockRef = useRef(false);
 
   // This screen is re-entered on every "Play Again", but React Navigation
   // keeps it mounted and pops back to the existing instance — so reset the
@@ -43,6 +42,7 @@ export function RoleReveal() {
       setStage('confirm');
       setHasRevealed(false);
       rotation.value = 0;
+      continueLockRef.current = false;
     }, [rotation]),
   );
 
@@ -80,6 +80,7 @@ export function RoleReveal() {
   }
 
   function handleConfirmIdentity() {
+    continueLockRef.current = false;
     setStage('hidden');
   }
 
@@ -95,6 +96,9 @@ export function RoleReveal() {
   }
 
   function handleContinue() {
+    if (continueLockRef.current) return;
+    continueLockRef.current = true;
+
     if (isLastPlayer) {
       confirmRoleAssignmentComplete();
       navigation.navigate('ClueTurn');
@@ -114,18 +118,7 @@ export function RoleReveal() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {stage === 'confirm' ? (
         <View style={styles.centered}>
-          <Icon name="smartphone" size={28} color={colors.textSecondary} />
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>{t('common.passDeviceTo')}</Text>
-          <Text style={[typography.display, styles.playerName, { color: colors.text }]}>{currentPlayer.name}</Text>
-          <Text style={[typography.body, styles.confirmPrompt, { color: colors.textSecondary }]}>
-            {t('common.areYouSure', { name: currentPlayer.name })}
-          </Text>
-          <Button
-            title={t('common.yesThatsMe')}
-            icon="user-check"
-            onPress={handleConfirmIdentity}
-            style={styles.confirmButton}
-          />
+          <PassDevicePrompt name={currentPlayer.name} color={currentPlayer.color} onConfirm={handleConfirmIdentity} />
         </View>
       ) : (
         <View style={styles.centered}>
@@ -182,16 +175,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.lg,
     gap: spacing.md,
-  },
-  playerName: {
-    textAlign: 'center',
-  },
-  confirmPrompt: {
-    textAlign: 'center',
-  },
-  confirmButton: {
-    marginTop: spacing.md,
-    width: 280,
   },
   glowWrapper: {
     alignItems: 'center',

@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { isRoomReadyForGame, useRoomStore } from '../../../core/room';
@@ -34,13 +34,22 @@ export function Lobby() {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [variantId, setVariantId] = useState<UndercoverVariantId>('classic');
+  // Guards against a fast double-tap (or Enter-then-tap) on Add firing
+  // handleAddPlayer twice before the re-render that clears `name` — without
+  // it, both calls read the same stale name and add two identical players.
+  const lastAddRef = useRef<{ name: string; time: number } | null>(null);
 
   const readiness = isRoomReadyForGame(players, UNDERCOVER_MIN_PLAYERS, UNDERCOVER_MAX_PLAYERS);
   const canStart = readiness.success;
 
   function handleAddPlayer() {
+    const trimmedName = name.trim();
+    const lastAdd = lastAddRef.current;
+    if (lastAdd && lastAdd.name === trimmedName && Date.now() - lastAdd.time < 500) return;
+
     const result = addPlayer(name, PLAYER_COLORS[players.length % PLAYER_COLORS.length], UNDERCOVER_MAX_PLAYERS);
     if (result.success) {
+      lastAddRef.current = { name: trimmedName, time: Date.now() };
       setName('');
       setError(null);
     } else {

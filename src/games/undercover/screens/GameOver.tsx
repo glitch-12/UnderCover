@@ -1,17 +1,17 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, usePreventRemove } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { useRoomStore } from '../../../core/room';
 import { useTurnStore } from '../../../core/turn';
-import { Button, Icon, RoleBadge, ScreenContainer } from '../../../shared/components';
-import { getContrastTextColor, getRoleColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
+import { Avatar, Button, Icon, RoleBadge, ScreenContainer } from '../../../shared/components';
+import { getRoleColor, radii, spacing, typography, useTheme } from '../../../shared/theme';
 import type { ThemeColors } from '../../../shared/theme';
 import { startUndercoverRound } from '../gameFlow';
 import { getLastVariantId } from '../gameSession';
 import type { UndercoverStackParamList } from '../UndercoverNavigator';
 import { BACK_ACTION_TYPES } from '../useConfirmEndGame';
+import { useRoster } from '../useRoster';
 
 type GameOverNavigationProp = NativeStackNavigationProp<UndercoverStackParamList, 'GameOver'>;
 
@@ -27,38 +27,47 @@ export function GameOver() {
   const colors = useTheme();
   const { t } = useTranslation();
 
-  const players = useRoomStore((s) => s.players);
   const winner = useTurnStore((s) => s.winner);
-  const roleAssignments = useTurnStore((s) => s.roleAssignments);
-  const eliminatedPlayerIds = useTurnStore((s) => s.eliminatedPlayerIds);
   const playAgain = useTurnStore((s) => s.playAgain);
+  const { players, assignmentsByPlayerId, eliminatedPlayerIds } = useRoster();
 
-  const assignmentsByPlayerId = useMemo(() => new Map(roleAssignments.map((a) => [a.playerId, a])), [roleAssignments]);
   const winnerColor = getWinnerColor(colors, winner);
+  const activeRoleRowStyle = useMemo(
+    () => ({ borderColor: colors.border, backgroundColor: colors.surface, opacity: 1 }),
+    [colors],
+  );
+  const eliminatedRoleRowStyle = useMemo(
+    () => ({ borderColor: colors.border, backgroundColor: colors.surface, opacity: 0.55 }),
+    [colors],
+  );
 
   function handlePlayAgain() {
     playAgain();
     startUndercoverRound(getLastVariantId());
-    navigation.navigate('RoleReveal');
+    // `navigate` would push a new RoleReveal on top of this round's
+    // ClueTurn/Vote/GameOver screens instead of clearing them, leaving
+    // stale screens reachable by going back.
+    navigation.reset({ index: 0, routes: [{ name: 'RoleReveal' }] });
   }
 
   function handleNewGame() {
     playAgain();
-    navigation.navigate('Lobby');
+    navigation.reset({ index: 0, routes: [{ name: 'Lobby' }] });
   }
 
   // The round already ended here, so back navigation (header button,
   // hardware back, swipe gesture) goes straight to the New Game flow
   // instead of the mid-game "end game or new game" confirmation — there's
-  // no in-progress round left to confirm losing.
-  useEffect(() => {
-    return navigation.addListener('beforeRemove', (e) => {
-      if (!BACK_ACTION_TYPES.has(e.data.action.type)) return;
-      e.preventDefault();
-      handleNewGame();
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation]);
+  // no in-progress round left to confirm losing. Uses `usePreventRemove`
+  // rather than a raw `beforeRemove` listener because native-stack only
+  // partially supports `preventDefault()` from that event directly.
+  usePreventRemove(true, ({ data }) => {
+    if (!BACK_ACTION_TYPES.has(data.action.type)) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    handleNewGame();
+  });
 
   return (
     <ScreenContainer>
@@ -81,17 +90,10 @@ export function GameOver() {
           return (
             <View
               key={player.id}
-              style={[
-                styles.roleRow,
-                { borderColor: colors.border, backgroundColor: colors.surface, opacity: eliminated ? 0.55 : 1 },
-              ]}
+              style={[styles.roleRow, eliminated ? eliminatedRoleRowStyle : activeRoleRowStyle]}
             >
               <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
-              <View style={[styles.avatar, { backgroundColor: player.color }]}>
-                <Text style={[typography.caption, { color: getContrastTextColor(player.color) }]}>
-                  {player.name.charAt(0).toUpperCase()}
-                </Text>
-              </View>
+              <Avatar name={player.name} color={player.color} />
               <View style={styles.roleInfo}>
                 <Text style={[typography.bodyStrong, { color: colors.text }]} numberOfLines={1}>
                   {player.name}
@@ -161,13 +163,6 @@ const styles = StyleSheet.create({
     width: 4,
     alignSelf: 'stretch',
     borderRadius: radii.pill,
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   roleInfo: {
     flex: 1,
