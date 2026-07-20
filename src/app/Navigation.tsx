@@ -3,12 +3,14 @@ import {
   type NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import { useTheme } from '../shared/theme';
+import { CodenamesNavigator } from '../games/codenames/CodenamesNavigator';
 import { UndercoverNavigator } from '../games/undercover/UndercoverNavigator';
 import { Home } from './screens';
 
 export type RootStackParamList = {
   Home: undefined;
   Undercover: undefined;
+  Codenames: undefined;
 };
 
 export type RootScreenProps<Screen extends keyof RootStackParamList> =
@@ -36,6 +38,11 @@ export function RootNavigator() {
       <Stack.Screen
         name="Undercover"
         component={UndercoverNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Codenames"
+        component={CodenamesNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

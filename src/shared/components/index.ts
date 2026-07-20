@@ -5,4 +5,5 @@ export * from './Icon';
 export * from './PassDevicePrompt';
 export * from './PlayerRow';
 export * from './RoleBadge';
+export * from './RuleBook';
 export * from './ScreenContainer';

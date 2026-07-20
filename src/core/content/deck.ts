@@ -17,7 +17,7 @@ export function shuffle<T>(items: readonly T[], rng: () => number = Math.random)
   return result;
 }
 
-function reshuffle(allIds: readonly string[], recentHistory: readonly string[], rng: () => number): string[] {
+export function reshuffle(allIds: readonly string[], recentHistory: readonly string[], rng: () => number): string[] {
   const recentSet = new Set(recentHistory);
   const fresh = allIds.filter((id) => !recentSet.has(id));
   const recent = allIds.filter((id) => recentSet.has(id));
