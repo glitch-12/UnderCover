@@ -1,4 +1,5 @@
 import type { IconName } from '../shared/components';
+import { CODENAMES_MAX_PLAYERS, CODENAMES_MIN_PLAYERS } from '../games/codenames/config';
 import { UNDERCOVER_MAX_PLAYERS, UNDERCOVER_MIN_PLAYERS } from '../games/undercover/config';
 import type { RootStackParamList } from './Navigation';
 
@@ -21,5 +22,14 @@ export const gameModules: GameModule[] = [
     minPlayers: UNDERCOVER_MIN_PLAYERS,
     maxPlayers: UNDERCOVER_MAX_PLAYERS,
     route: 'Undercover',
+  },
+  {
+    id: 'codenames',
+    name: 'Codenames',
+    description: 'Give one-word clues to guess your team’s agents',
+    icon: 'grid',
+    minPlayers: CODENAMES_MIN_PLAYERS,
+    maxPlayers: CODENAMES_MAX_PLAYERS,
+    route: 'Codenames',
   },
 ];

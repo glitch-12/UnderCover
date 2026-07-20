@@ -90,5 +90,60 @@
     "roleWithWord": "{{role}} — {{word}}",
     "playAgain": "Play Again",
     "newGame": "New Game"
+  },
+  "codenames": {
+    "team": {
+      "red": "Red Team",
+      "blue": "Blue Team",
+      "redShort": "Red",
+      "blueShort": "Blue"
+    },
+    "teamSetup": {
+      "playersTitle": "Players",
+      "playersCount": "{{count}} / {{max}} added · need at least {{min}} to start",
+      "playerNamePlaceholder": "Player name",
+      "unassigned": "Unassigned",
+      "teamsTitle": "Teams",
+      "tapToAssign": "Tap a player's team badge to cycle Unassigned → Red → Blue, then tap the star to set that team's Codemaster.",
+      "codemasterHint": "Codemaster",
+      "startGame": "Start Game",
+      "needTeams": "Each team needs at least 2 players and one Codemaster.",
+      "rulesButton": "Rules"
+    },
+    "codemasterReveal": {
+      "headerTitle": "Codemaster",
+      "title": "Memorize the key",
+      "hint": "Only the Codemaster should see this screen. Tap Ready once you've studied the board.",
+      "readyToClue": "Ready — Give a Clue",
+      "noActiveGame": "No active game."
+    },
+    "clueEntry": {
+      "title": "Give your clue",
+      "hint": "One word, plus how many board words it relates to.",
+      "wordPlaceholder": "Clue word",
+      "submit": "Give Clue",
+      "genericError": "Enter a clue word and a valid number."
+    },
+    "board": {
+      "headerTitle": "Codenames",
+      "guessesLeft_one": "{{count}} guess left",
+      "guessesLeft_other": "{{count}} guesses left",
+      "endTurn": "End Turn",
+      "turnOverTitle": "Turn over",
+      "turnOverHint": "Pass the device to the other team's Codemaster.",
+      "continue": "Continue",
+      "clueLabel": "Clue"
+    },
+    "gameOver": {
+      "headerTitle": "Game Over",
+      "gameOver": "Game Over",
+      "winner": "{{team}} Wins!",
+      "playAgain": "Play Again",
+      "newGame": "New Game",
+      "codemasterSuffix": " (Codemaster)"
+    },
+    "rules": {
+      "headerTitle": "How to Play"
+    }
   }
 }

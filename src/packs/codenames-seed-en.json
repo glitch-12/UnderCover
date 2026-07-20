@@ -1,0 +1,31 @@
+{
+  "id": "codenames-seed-en",
+  "name": "Codenames Seed Pack (English)",
+  "locale": "en",
+  "version": 1,
+  "words": [
+    "Coffee", "Pizza", "Burger", "Rice", "Apple", "Banana", "Mango", "Bread",
+    "Butter", "Cheese", "Honey", "Lemon", "Chocolate", "Pumpkin", "Olive",
+    "Pepper", "Salt", "Sugar", "Carrot", "Onion",
+    "Elephant", "Tiger", "Lion", "Eagle", "Shark", "Whale", "Dolphin",
+    "Penguin", "Kangaroo", "Octopus", "Spider", "Scorpion", "Dragon",
+    "Unicorn", "Wolf", "Fox", "Bear", "Rabbit", "Horse", "Snake", "Owl",
+    "London", "Paris", "Tokyo", "Egypt", "Amazon", "Everest", "Antarctica",
+    "Sahara", "Atlantis", "Hollywood", "Vegas", "Iceland", "Jungle",
+    "Desert", "Island", "Volcano", "Castle", "Temple", "Pyramid", "Palace",
+    "Hammer", "Ladder", "Compass", "Anchor", "Rocket", "Laser", "Telescope",
+    "Microscope", "Umbrella", "Candle", "Mirror", "Clock", "Key", "Lock",
+    "Chain", "Rope", "Needle", "Button", "Ring", "Crown",
+    "Mountain", "River", "Ocean", "Forest", "Storm", "Thunder", "Lightning",
+    "Rainbow", "Snow", "Ice", "Fire", "Wind", "Star", "Moon", "Sun",
+    "Cloud", "Wave", "Cave", "Stone", "Diamond",
+    "Robot", "Computer", "Internet", "Battery", "Engine", "Camera",
+    "Phone", "Radio", "Television", "Satellite",
+    "Doctor", "Pilot", "Ninja", "Pirate", "Wizard", "Knight", "Spy",
+    "Astronaut", "Detective", "Sailor", "Soldier", "Farmer", "Teacher",
+    "Artist", "Scientist",
+    "Shadow", "Dream", "Ghost", "Time", "Music", "Circus", "Puzzle",
+    "Maze", "Treasure", "Secret", "Mask", "Flag", "Bridge", "Tower",
+    "Web", "Shield"
+  ]
+}
