@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { Icon } from '../../shared/components';
 import { elevation, radii, spacing, typography, useTheme } from '../../shared/theme';
 import { gameModules } from '../gameRegistry';
@@ -46,6 +47,10 @@ export function Home() {
           </Pressable>
         ))}
       </View>
+
+      <View style={styles.adSlot}>
+        <BannerAd unitId={TestIds.BANNER} size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+      </View>
     </View>
   );
 }
@@ -69,6 +74,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   card: {
+  adSlot: {
+    alignItems: 'center',
+    marginTop: 'auto',
+  },
+  card: {
+  listCard: {
     borderWidth: 1,
     borderRadius: radii.lg,
   },
