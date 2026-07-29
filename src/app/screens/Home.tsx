@@ -1,6 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Fragment } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { Icon } from '../../shared/components';
@@ -25,24 +24,27 @@ export function Home() {
       <View style={[styles.headerRule, { backgroundColor: colors.border }]} />
 
       <Text style={[typography.label, styles.sectionLabel, { color: colors.textSecondary }]}>Games</Text>
-      <View style={[styles.listCard, elevation('md'), { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {gameModules.map((module, index) => (
-          <Fragment key={module.id}>
-            {index > 0 && <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />}
-            <Pressable
-              onPress={() => navigation.navigate(module.route)}
-              style={({ pressed }) => [styles.row, { opacity: pressed ? 0.7 : 1 }]}
-            >
-              <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}22` }]}>
-                <Icon name={module.icon} size={22} color={colors.primary} />
-              </View>
-              <View style={styles.rowText}>
-                <Text style={[typography.subtitle, { color: colors.text }]}>{module.name}</Text>
-                <Text style={[typography.caption, { color: colors.textSecondary }]}>{module.description}</Text>
-              </View>
-              <Icon name="chevron-right" size={20} color={colors.textSecondary} />
-            </Pressable>
-          </Fragment>
+      <View style={styles.gameList}>
+        {gameModules.map((module) => (
+          <Pressable
+            key={module.id}
+            onPress={() => navigation.navigate(module.route)}
+            style={({ pressed }) => [
+              styles.row,
+              styles.card,
+              elevation('md'),
+              { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}22` }]}>
+              <Icon name={module.icon} size={22} color={colors.primary} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={[typography.subtitle, { color: colors.text }]}>{module.name}</Text>
+              <Text style={[typography.caption, { color: colors.textSecondary }]}>{module.description}</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={colors.textSecondary} />
+          </Pressable>
         ))}
       </View>
 
@@ -71,6 +73,7 @@ const styles = StyleSheet.create({
   gameList: {
     gap: spacing.sm,
   },
+  card: {
   adSlot: {
     alignItems: 'center',
     marginTop: 'auto',
@@ -79,17 +82,12 @@ const styles = StyleSheet.create({
   listCard: {
     borderWidth: 1,
     borderRadius: radii.lg,
-    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.md,
-  },
-  rowDivider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: spacing.md + 48 + spacing.md,
   },
   iconBadge: {
     width: 48,
