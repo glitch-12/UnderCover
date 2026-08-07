@@ -105,10 +105,9 @@
       <li>App usage events (app opens, session start/end, app updates)</li>
       <li>Device information (device model, OS version, language/locale)</li>
       <li>A Firebase-generated installation identifier (not tied to your name or account)</li>
-      <li>Advertising ID and approximate, city/country-level location (derived from IP address) — collected by default by the Firebase Analytics SDK unless a user has limited ad tracking at the device level</li>
     </ul>
+    <p>The App does <strong>not</strong> read or collect your device's Advertising ID — that permission is explicitly excluded, so Firebase Analytics operates without ad-ID-based attribution or approximate location data.</p>
     <p>This data is collected and processed by Google, not by us directly, and is governed by the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase's data disclosure</a>. We do not use this data for advertising — the App shows no ads — only for aggregate usage analytics.</p>
-    <p>You can limit this by resetting or opting out of your device's Advertising ID (Android: Settings → Google → Ads → "Delete advertising ID"; iOS: Settings → Privacy → Tracking).</p>
 
     <h2>Data we store locally on your device</h2>
     <ul>
@@ -120,7 +119,8 @@
     <h2>Data we do NOT collect</h2>
     <ul>
       <li>We do not require or collect account registration, email addresses, or passwords</li>
-      <li>We do not collect precise location</li>
+      <li>We do not collect your Advertising ID</li>
+      <li>We do not collect precise or approximate location</li>
       <li>We do not access your contacts, photos, or microphone</li>
       <li>We do not sell personal data</li>
     </ul>
