@@ -1,6 +1,9 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Firebase Analytics pulls in play-services-ads-identifier, which requests AD_ID by
+         default. Explicitly excluded so the app does not read the Advertising ID at all. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application
       android:name=".MainApplication"

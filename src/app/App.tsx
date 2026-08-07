@@ -4,10 +4,8 @@
  */
 
 import { NavigationContainer } from '@react-navigation/native';
-import { useEffect } from 'react';
 import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import mobileAds from 'react-native-google-mobile-ads';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../i18n';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -15,10 +13,6 @@ import { RootNavigator } from './Navigation';
 
 function App() {
   const isDarkMode = useColorScheme() !== 'light';
-
-  useEffect(() => {
-    mobileAds().initialize();
-  }, []);
 
   return (
     <GestureHandlerRootView style={styles.root}>

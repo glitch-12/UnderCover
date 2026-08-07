@@ -59,7 +59,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -93,10 +93,10 @@ android {
 
     namespace "com.glitch.undercover"
     defaultConfig {
-        applicationId "com.glitch.undercover"
+        applicationId "com.glitch.stackhouse"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 5
         versionName "1.0"
     }
     signingConfigs {
