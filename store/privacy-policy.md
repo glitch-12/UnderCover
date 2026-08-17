@@ -2,7 +2,7 @@
 
 **Last updated: August 7, 2026**
 
-Undercover ("the App") is a local, pass-and-play party game developed by Vaibhavi Sharma ("we", "us"). This policy explains what data the App handles.
+Undercover ("the App") is a local, pass-and-play party game developed by Partha Hudati ("we", "us"). This policy explains what data the App handles.
 
 ## Summary
 
